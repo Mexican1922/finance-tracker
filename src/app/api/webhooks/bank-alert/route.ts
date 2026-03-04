@@ -90,6 +90,7 @@ export async function POST(req: Request) {
     // PalmPay Outgoing format: "Your transfer of NGN 100.00 to CHIBUZOR VALENTINE AZOLIBE(OPay) has been confirmed"
     const palmpayOutMatch =
       text.match(/Your transfer of.*?to\s+(.*?)\s+has typically/i) ||
+      text.match(/Your transfer of.*?to\s+(.*?)\s+has been/i) ||
       text.match(/Your transfer of.*?to\s+(.*?)\s+has/i);
 
     if (opayEmailMatch && opayEmailMatch[1]) {
