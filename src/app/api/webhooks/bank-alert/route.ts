@@ -18,11 +18,14 @@ export async function POST(req: Request) {
     const { uid, text } = body;
 
     if (!uid || !text) {
+      console.error("Webhook Error: Missing uid or text", body);
       return NextResponse.json(
         { error: "Missing 'uid' or 'text' in payload." },
         { status: 400 },
       );
     }
+
+    console.log("Received Webhook Payload:", body);
 
     // 1. Determine Transaction Type (Debit vs Credit)
     // We look for common keywords in bank SMS alerts.
