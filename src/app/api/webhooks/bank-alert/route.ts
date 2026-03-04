@@ -35,7 +35,8 @@ export async function POST(req: Request) {
     if (
       lowerText.includes("credit") ||
       lowerText.includes("cr:") ||
-      lowerText.includes("received")
+      lowerText.includes("received") ||
+      lowerText.includes("incoming")
     ) {
       type = "income";
     }
@@ -76,13 +77,30 @@ export async function POST(req: Request) {
     }
 
     // 3. Create the Transaction Object matching our Schema
+    let cleanNote = text.substring(0, 100);
+
+    // Try to extract name from OPay Email format: "Name:CHIBUZOR VALENTINE AZOLIBEBank:PalmPay"
+    const nameMatch = text.match(/Name:\s*(.*?)\s*Bank:/i);
+    if (nameMatch && nameMatch[1]) {
+      cleanNote = `From: ${nameMatch[1].trim()}`;
+    } else {
+      // Try to extract name from OPay Push format: "Incoming Transfer Successful CHIBUZOR VALENTINE AZOLIBE has sent you"
+      const sentYouMatch = text.match(/(.*?)\s+has sent you/i);
+      if (sentYouMatch && sentYouMatch[1]) {
+        let name = sentYouMatch[1]
+          .replace(/Incoming Transfer Successful\s*/i, "")
+          .trim();
+        if (name) cleanNote = `From: ${name}`;
+      }
+    }
+
     const newTransaction = {
       uid: uid,
       amount: amount,
       type: type,
       category: type === "income" ? "Transfer" : "General", // Default categories
       date: Timestamp.fromDate(new Date()), // Use current server time
-      notes: text.substring(0, 100), // Save the first 100 chars of the SMS as a note
+      notes: cleanNote, // Save the cleaned note
       isRecurring: false,
     };
 
