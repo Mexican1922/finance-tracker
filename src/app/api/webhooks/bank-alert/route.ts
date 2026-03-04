@@ -41,11 +41,22 @@ export async function POST(req: Request) {
     }
 
     // 2. Extract the Amount using Regex
-    // This regex looks for currency symbols or words (NGN, ₦, N, $, USD, EUR, GBP, £, €),
-    // followed by optional spaces, then numbers with optional commas and decimals.
-    // By making the currency symbol mandatory, we avoid matching account numbers or dates in long emails.
-    const amountRegex = /(?:NGN|₦|N|USD|EUR|GBP|\$|£|€)\s*([\d,]+\.?\d*)/i;
-    const amountMatch = text.match(amountRegex);
+    // First, try to find a currency symbol followed by a number
+    let amountRegex = /(?:NGN|₦|N|USD|EUR|GBP|\$|£|€)\s*([\d,]+\.?\d*)/i;
+    let amountMatch = text.match(amountRegex);
+
+    // Second, if no currency symbol, look for contextual keywords like "sent you 200"
+    if (!amountMatch) {
+      amountRegex = /(?:sent you|amount\s*:|transfer of)\s*([\d,]+\.?\d*)/i;
+      amountMatch = text.match(amountRegex);
+    }
+
+    // Finally, fallback to finding any number that explicitly has a decimal (e.g., 208.00)
+    // We avoid matching whole numbers here so we don't accidentally match an account number!
+    if (!amountMatch) {
+      amountRegex = /([\d,]+\.\d{2})/i;
+      amountMatch = text.match(amountRegex);
+    }
 
     let amount = 0;
     if (amountMatch && amountMatch[1]) {
