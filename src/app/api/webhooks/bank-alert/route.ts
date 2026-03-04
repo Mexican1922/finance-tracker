@@ -41,10 +41,10 @@ export async function POST(req: Request) {
     }
 
     // 2. Extract the Amount using Regex
-    // This regex looks for currency symbols or words (NGN, $, USD), followed by optional spaces,
-    // then numbers with optional commas and decimals.
-    // E.g., Matches: "NGN 5,000.00", "$45.99", "1,234.56"
-    const amountRegex = /(?:NGN|USD|EUR|GBP|\$|£|€)?\s*([\d,]+\.?\d*)/i;
+    // This regex looks for currency symbols or words (NGN, ₦, N, $, USD, EUR, GBP, £, €),
+    // followed by optional spaces, then numbers with optional commas and decimals.
+    // By making the currency symbol mandatory, we avoid matching account numbers or dates in long emails.
+    const amountRegex = /(?:NGN|₦|N|USD|EUR|GBP|\$|£|€)\s*([\d,]+\.?\d*)/i;
     const amountMatch = text.match(amountRegex);
 
     let amount = 0;
