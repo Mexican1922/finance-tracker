@@ -81,19 +81,37 @@ export async function POST(req: Request) {
     // 3. Create the Transaction Object matching our Schema
     let cleanNote = text.substring(0, 100);
 
-    // Try to extract name from OPay Email format: "Name:CHIBUZOR VALENTINE AZOLIBEBank:PalmPay"
-    const nameMatch = text.match(/Name:\s*(.*?)\s*Bank:/i);
-    if (nameMatch && nameMatch[1]) {
-      cleanNote = `From: ${nameMatch[1].trim()}`;
+    // OPay Email format: "Name:CHIBUZOR VALENTINE AZOLIBEBank:PalmPay"
+    const opayEmailMatch = text.match(/Name:\s*(.*?)\s*Bank:/i);
+    // OPay Push format: "Incoming Transfer Successful CHIBUZOR VALENTINE AZOLIBE has sent you"
+    const opayPushMatch = text.match(/(.*?)\s+has sent you/i);
+    // PalmPay Incoming format: "You received NGN 100.00 from CHIBUZOR VALENTINE AZOLIBE. Save smarter..."
+    const palmpayInMatch = text.match(/You received.*?from\s+(.*?)\./i);
+    // PalmPay Outgoing format: "Your transfer of NGN 100.00 to CHIBUZOR VALENTINE AZOLIBE(OPay) has been confirmed"
+    const palmpayOutMatch =
+      text.match(/Your transfer of.*?to\s+(.*?)\s+has typically/i) ||
+      text.match(/Your transfer of.*?to\s+(.*?)\s+has/i);
+
+    if (opayEmailMatch && opayEmailMatch[1]) {
+      cleanNote = `From: ${opayEmailMatch[1].trim()} (OPay)`;
+    } else if (opayPushMatch && opayPushMatch[1]) {
+      let name = opayPushMatch[1]
+        .replace(/Incoming Transfer Successful\s*/i, "")
+        .trim();
+      if (name) cleanNote = `From: ${name} (OPay)`;
+    } else if (palmpayInMatch && palmpayInMatch[1]) {
+      cleanNote = `From: ${palmpayInMatch[1].trim()} (PalmPay)`;
+    } else if (palmpayOutMatch && palmpayOutMatch[1]) {
+      let name = palmpayOutMatch[1].trim();
+      cleanNote = `To: ${name} (PalmPay)`;
     } else {
-      // Try to extract name from OPay Push format: "Incoming Transfer Successful CHIBUZOR VALENTINE AZOLIBE has sent you"
-      const sentYouMatch = text.match(/(.*?)\s+has sent you/i);
-      if (sentYouMatch && sentYouMatch[1]) {
-        let name = sentYouMatch[1]
-          .replace(/Incoming Transfer Successful\s*/i, "")
-          .trim();
-        if (name) cleanNote = `From: ${name}`;
-      }
+      // Fallback cleanup
+      cleanNote = cleanNote
+        .replace(/Save smarter, earn PLUS returns with safety.*/i, "")
+        .trim();
+      cleanNote = cleanNote
+        .replace(/Get up to 6% bonus on OPay Airtime.*/i, "")
+        .trim();
     }
 
     const newTransaction = {
