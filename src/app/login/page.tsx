@@ -3,15 +3,49 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { signInWithGoogle, signInWithEmail } from "@/lib/firebase/auth";
-import { Lock, Mail, ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
+import {
+  signInWithGoogle,
+  signInWithEmail,
+  resetPassword,
+} from "@/lib/firebase/auth";
+import {
+  Lock,
+  Mail,
+  ArrowRight,
+  TrendingUp,
+  Shield,
+  Zap,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setErrorMsg("Please enter your email address to reset password.");
+      setSuccessMsg("");
+      return;
+    }
+    setIsLoading(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+    try {
+      await resetPassword(email);
+      setSuccessMsg("Password reset email sent! Check your inbox.");
+    } catch {
+      setErrorMsg("Failed to send reset email. Ensure the email is correct.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -147,6 +181,11 @@ export default function LoginPage() {
               {errorMsg}
             </div>
           )}
+          {successMsg && (
+            <div className="mb-5 rounded-2xl bg-green-500/10 p-3.5 text-center text-sm font-medium text-green-500">
+              {successMsg}
+            </div>
+          )}
 
           {/* Google button */}
           <button
@@ -199,15 +238,37 @@ export default function LoginPage() {
                 className="w-full rounded-2xl border border-foreground/10 bg-transparent py-3.5 pl-12 pr-4 text-sm outline-none ring-accent transition-all focus:border-accent focus:ring-1"
               />
             </div>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-foreground/40" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                className="w-full rounded-2xl border border-foreground/10 bg-transparent py-3.5 pl-12 pr-4 text-sm outline-none ring-accent transition-all focus:border-accent focus:ring-1"
-              />
+            <div>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-foreground/40" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  className="w-full rounded-2xl border border-foreground/10 bg-transparent py-3.5 pl-12 pr-12 text-sm outline-none ring-accent transition-all focus:border-accent focus:ring-1"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-colors cursor-pointer"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4.5 w-4.5" />
+                  ) : (
+                    <Eye className="h-4.5 w-4.5" />
+                  )}
+                </button>
+              </div>
+              <div className="flex justify-end mt-2">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-xs font-medium text-indigo-500 hover:underline cursor-pointer"
+                >
+                  Forgot password?
+                </button>
+              </div>
             </div>
             <button
               type="submit"

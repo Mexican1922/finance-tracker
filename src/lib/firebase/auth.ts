@@ -7,6 +7,7 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
   User,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -91,6 +92,15 @@ export const signInWithEmail = async (email: string, password: string) => {
     return result.user;
   } catch (error) {
     console.error("Error signing in with email", error);
+    throw error;
+  }
+};
+
+export const resetPassword = async (email: string) => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+  } catch (error) {
+    console.error("Error sending password reset email", error);
     throw error;
   }
 };
