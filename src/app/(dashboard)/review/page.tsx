@@ -132,7 +132,8 @@ export default function ReviewPage() {
                   No expenses recorded yet.
                 </div>
               ) : (
-                sortedCategories.map(([category, amount], index) => {
+                sortedCategories.map(([category, amountValue], index) => {
+                  const amount = amountValue as number;
                   const percentage =
                     totalSpent > 0 ? (amount / totalSpent) * 100 : 0;
                   return (

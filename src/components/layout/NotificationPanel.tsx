@@ -1,13 +1,32 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Bell } from "lucide-react";
-import { useNotifications, AppNotification } from "@/hooks/useNotifications";
+import {
+  Bell,
+  Trophy,
+  Target,
+  Calendar,
+  TrendingUp,
+  Lightbulb,
+} from "lucide-react";
+import {
+  useNotifications,
+  AppNotification,
+  NotificationIcon,
+} from "@/hooks/useNotifications";
 
 const TYPE_STYLES = {
   warning: "bg-amber-500/10 text-amber-600",
   success: "bg-green-500/10 text-green-600",
   info: "bg-blue-500/10 text-blue-600",
+};
+
+const ICON_MAP: Record<NotificationIcon, React.ReactNode> = {
+  trophy: <Trophy className="h-5 w-5" />,
+  target: <Target className="h-5 w-5" />,
+  calendar: <Calendar className="h-5 w-5" />,
+  "trending-up": <TrendingUp className="h-5 w-5" />,
+  lightbulb: <Lightbulb className="h-5 w-5" />,
 };
 
 function NotificationItem({ n }: { n: AppNotification }) {
@@ -16,7 +35,7 @@ function NotificationItem({ n }: { n: AppNotification }) {
       <div
         className={`flex-shrink-0 h-9 w-9 flex items-center justify-center rounded-xl text-base ${TYPE_STYLES[n.type]}`}
       >
-        {n.emoji}
+        {ICON_MAP[n.icon]}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-foreground">{n.title}</p>
