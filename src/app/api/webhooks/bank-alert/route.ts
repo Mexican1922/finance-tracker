@@ -27,9 +27,29 @@ export async function POST(req: Request) {
 
     console.log("Received Webhook Payload:", body);
 
+    const lowerText = text.toLowerCase();
+
+    // 0. Strict Validation: Ignore obvious spam and internal transfers cleanly
+    const blacklist = [
+      "no deposit",
+      "waje",
+      "auto save",
+      "cashbox",
+      "sign up",
+      "moved to your",
+      "savings are on track",
+    ];
+
+    if (blacklist.some((keyword) => lowerText.includes(keyword))) {
+      console.log("Ignored promotional or internal app notification.");
+      return NextResponse.json(
+        { success: true, message: "Ignored promotional or internal alert." },
+        { status: 200 }, // Send 200 so MacroDroid doesn't treat it as a failure
+      );
+    }
+
     // 1. Determine Transaction Type (Debit vs Credit)
     // We look for common keywords in bank SMS alerts.
-    const lowerText = text.toLowerCase();
     let type: "income" | "expense" = "expense"; // Default to expense
 
     if (
