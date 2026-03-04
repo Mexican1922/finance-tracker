@@ -36,7 +36,9 @@ export async function POST(req: Request) {
       lowerText.includes("credit") ||
       lowerText.includes("cr:") ||
       lowerText.includes("received") ||
-      lowerText.includes("incoming")
+      lowerText.includes("incoming") ||
+      lowerText.includes("sent you") ||
+      lowerText.includes("deposit")
     ) {
       type = "income";
     }
