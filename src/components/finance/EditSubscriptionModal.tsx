@@ -1,0 +1,151 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { X, Loader2 } from "lucide-react";
+import { updateDoc, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase/firebase";
+import { Subscription } from "@/lib/firebase/firestore";
+import { useCurrency } from "@/hooks/useCurrency";
+
+interface EditSubscriptionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  subscription: Subscription | null;
+}
+
+export default function EditSubscriptionModal({
+  isOpen,
+  onClose,
+  subscription,
+}: EditSubscriptionModalProps) {
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [billingCycle, setBillingCycle] = useState("monthly");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { currency } = useCurrency();
+
+  useEffect(() => {
+    if (subscription && isOpen) {
+      setName(subscription.name);
+      setAmount(subscription.amount.toString());
+      setBillingCycle(subscription.billingCycle);
+    }
+  }, [subscription, isOpen]);
+
+  if (!isOpen || !subscription) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !amount) return;
+
+    setIsSubmitting(true);
+    try {
+      const subRef = doc(db, "subscriptions", subscription.id as string);
+      await updateDoc(subRef, {
+        name,
+        amount: parseFloat(amount),
+        billingCycle,
+      });
+      onClose();
+    } catch (error) {
+      console.error("Error updating subscription: ", error);
+      alert("Failed to update subscription. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="glass-card relative w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between border-b border-foreground/5 px-6 py-4">
+          <h2 className="text-lg font-semibold tracking-tight">
+            Edit '{subscription.name}'
+          </h2>
+          <button
+            onClick={onClose}
+            className="rounded-full p-2 text-foreground/50 hover:bg-foreground/5 hover:text-foreground transition-colors cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-foreground/80">
+              Service Name
+            </label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-xl border border-foreground/10 bg-foreground/[0.02] px-4 py-2.5 text-foreground placeholder:text-foreground/40 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition-all"
+              placeholder="e.g. Netflix"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-foreground/80">
+              Amount
+            </label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/50">
+                {currency.symbol}
+              </span>
+              <input
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full rounded-xl border border-foreground/10 bg-foreground/[0.02] py-2.5 pl-8 pr-4 text-foreground placeholder:text-foreground/40 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition-all"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-foreground/80">
+              Billing Cycle
+            </label>
+            <select
+              value={billingCycle}
+              onChange={(e) => setBillingCycle(e.target.value)}
+              className="w-full rounded-xl border border-foreground/10 bg-[var(--card-bg)] text-foreground px-4 py-2.5 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition-all appearance-none cursor-pointer"
+            >
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+
+          <div className="mt-6 flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 rounded-xl bg-foreground/5 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-foreground/10 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-accent-foreground hover:opacity-90 transition-opacity cursor-pointer flex justify-center items-center disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Save Changes"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
