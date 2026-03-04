@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
     const lowerText = text.toLowerCase();
 
-    // 0. Strict Validation: Ignore obvious spam and internal transfers cleanly
+    // 0. Strict Validation: Ignore obvious spam and internally moving money
     const blacklist = [
       "no deposit",
       "waje",
@@ -38,12 +38,48 @@ export async function POST(req: Request) {
       "sign up",
       "moved to your",
       "savings are on track",
+      "bonus", // ignore bonus ads
+      "airtime", // ignore airtime ads unless you want to track airtime
     ];
 
     if (blacklist.some((keyword) => lowerText.includes(keyword))) {
       console.log("Ignored promotional or internal app notification.");
       return NextResponse.json(
         { success: true, message: "Ignored promotional or internal alert." },
+        { status: 200 }, // Send 200 so MacroDroid doesn't treat it as a failure
+      );
+    }
+
+    // 0.5. Strict Whitelist: Ensure it actually contains financial transaction words
+    const transactionKeywords = [
+      "received",
+      "credit",
+      "cr:",
+      "incoming",
+      "sent you",
+      "deposit", // Income
+      "transfer of",
+      "debit",
+      "dr:",
+      "payment",
+      "paid", // Expense
+      "amount",
+      "ngn",
+      "₦",
+      "$",
+      "usd", // Currency
+    ];
+
+    const isActualTransaction = transactionKeywords.some((keyword) =>
+      lowerText.includes(keyword),
+    );
+
+    if (!isActualTransaction) {
+      console.log(
+        "Ignored non-transactional notification (no valid keywords found).",
+      );
+      return NextResponse.json(
+        { success: true, message: "Ignored non-transactional alert." },
         { status: 200 }, // Send 200 so MacroDroid doesn't treat it as a failure
       );
     }
