@@ -10,6 +10,9 @@ import {
   Lightbulb,
   CheckCheck,
 } from "lucide-react";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase/firebase";
+import { useAuth } from "@/components/auth/AuthProvider";
 import {
   useNotifications,
   AppNotification,
@@ -33,21 +36,6 @@ const TYPE_STYLES = {
   info: "bg-blue-500/10 text-blue-600",
 };
 
-const STORAGE_KEY = "ft_read_notifications";
-
-function getReadIds(): Set<string> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? new Set(JSON.parse(raw)) : new Set();
-  } catch {
-    return new Set();
-  }
-}
-
-function saveReadIds(ids: Set<string>) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(ids)));
-}
-
 function NotificationItem({
   n,
   isRead,
@@ -65,7 +53,7 @@ function NotificationItem({
           ? "opacity-50 hover:opacity-70 hover:bg-foreground/[0.01]"
           : "hover:bg-foreground/[0.03]"
       }`}
-      onClick={() => onMarkRead(n.id)}
+      onClick={() => !isRead && onMarkRead(n.id)}
     >
       <div
         className={`flex-shrink-0 h-9 w-9 flex items-center justify-center rounded-xl ${TYPE_STYLES[n.type]} ${isRead ? "opacity-60" : ""}`}
@@ -75,7 +63,7 @@ function NotificationItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p
-            className={`text-sm font-semibold text-foreground ${isRead ? "font-normal" : ""}`}
+            className={`text-sm text-foreground ${isRead ? "font-normal" : "font-semibold"}`}
           >
             {n.title}
           </p>
@@ -99,33 +87,66 @@ function NotificationItem({
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [saving, setSaving] = useState(false);
   const { notifications } = useNotifications();
+  const { user } = useAuth();
   const ref = useRef<HTMLDivElement>(null);
 
-  // Load read IDs from localStorage on mount
+  // Load read IDs from Firestore on mount / user change
   useEffect(() => {
-    setReadIds(getReadIds());
-  }, []);
+    if (!user) return;
+    const userRef = doc(db, "users", user.uid);
+    getDoc(userRef).then((snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (Array.isArray(data.readNotificationIds)) {
+          setReadIds(new Set(data.readNotificationIds));
+        }
+      }
+    });
+  }, [user]);
+
+  // Persist read IDs to Firestore
+  const persistReadIds = useCallback(
+    async (ids: Set<string>) => {
+      if (!user || saving) return;
+      setSaving(true);
+      try {
+        const userRef = doc(db, "users", user.uid);
+        await setDoc(
+          userRef,
+          { readNotificationIds: Array.from(ids) },
+          { merge: true },
+        );
+      } catch (e) {
+        console.error("Failed to save read notifications:", e);
+      } finally {
+        setSaving(false);
+      }
+    },
+    [user, saving],
+  );
 
   // Mark a single notification as read
-  const markRead = useCallback((id: string) => {
-    setReadIds((prev) => {
-      const next = new Set(prev);
-      next.add(id);
-      saveReadIds(next);
-      return next;
-    });
-  }, []);
+  const markRead = useCallback(
+    (id: string) => {
+      setReadIds((prev) => {
+        const next = new Set(prev);
+        next.add(id);
+        persistReadIds(next);
+        return next;
+      });
+    },
+    [persistReadIds],
+  );
 
   // Mark all as read
   const markAllRead = useCallback(() => {
     const allIds = new Set(notifications.map((n) => n.id));
     setReadIds(allIds);
-    saveReadIds(allIds);
-  }, [notifications]);
+    persistReadIds(allIds);
+  }, [notifications, persistReadIds]);
 
-  // Auto-mark all as read when panel is opened
-  // (but we'll keep a brief delay so user sees the unread dots first)
   const unreadCount = notifications.filter((n) => !readIds.has(n.id)).length;
 
   useEffect(() => {
@@ -162,7 +183,7 @@ export default function NotificationBell() {
             <h4 className="font-semibold text-sm tracking-tight">
               Notifications
             </h4>
-            {unreadCount > 0 && (
+            {unreadCount > 0 ? (
               <button
                 onClick={markAllRead}
                 className="flex items-center gap-1.5 text-xs font-medium text-accent hover:underline cursor-pointer"
@@ -170,11 +191,12 @@ export default function NotificationBell() {
                 <CheckCheck className="h-3.5 w-3.5" />
                 Mark all read
               </button>
-            )}
-            {unreadCount === 0 && notifications.length > 0 && (
-              <span className="text-xs text-foreground/40">
-                All caught up ✓
-              </span>
+            ) : (
+              notifications.length > 0 && (
+                <span className="text-xs text-foreground/40">
+                  All caught up ✓
+                </span>
+              )
             )}
           </div>
 
