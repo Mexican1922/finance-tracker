@@ -109,17 +109,17 @@ export default function EditTransactionModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] bg-background/80 backdrop-blur-sm"
           />
           <motion.div
             initial={{ opacity: 0, y: 100, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.95 }}
             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-md overflow-hidden rounded-t-3xl bg-background/95 shadow-2xl backdrop-blur-xl border-t border-foreground/10 sm:inset-x-4 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:rounded-3xl"
+            className="fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-md overflow-hidden rounded-t-3xl bg-background/95 shadow-2xl backdrop-blur-xl border-t border-foreground/10 sm:inset-x-4 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:rounded-3xl"
           >
             {/* Scrollable inner content */}
-            <div className="max-h-[85vh] overflow-y-auto px-4 pb-8 pt-6 sm:px-6 sm:pb-6">
+            <div className="max-h-[85vh] overflow-y-auto px-4 pb-12 pt-6 sm:px-6 sm:pb-6">
               {/* Header */}
               <div className="mb-5 flex items-center justify-between">
                 <h3 className="text-lg font-semibold tracking-tight text-foreground">
