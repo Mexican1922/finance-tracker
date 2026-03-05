@@ -19,13 +19,14 @@ export default function ChangeCurrencyModal({
   currentCurrency,
 }: ChangeCurrencyModalProps) {
   const [selectedCurrency, setSelectedCurrency] = useState(currentCurrency);
+  const [convertExisting, setConvertExisting] = useState(true);
   const { updateCurrency } = useCurrency();
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    await updateCurrency(selectedCurrency);
+    await updateCurrency(selectedCurrency, convertExisting);
     setIsSaving(false);
     onClose();
   };
@@ -103,12 +104,33 @@ export default function ChangeCurrencyModal({
                 ))}
               </div>
 
+              {selectedCurrency !== currentCurrency && (
+                <label className="flex items-start gap-3 mt-4 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={convertExisting}
+                    onChange={(e) => setConvertExisting(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-foreground/20 text-orange-500 focus:ring-orange-500"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-orange-600 dark:text-orange-400">
+                      Convert existing amounts?
+                    </p>
+                    <p className="text-xs text-orange-600/80 dark:text-orange-400/80 mt-1 leading-relaxed">
+                      If checked, we'll use live exchange rates to automatically
+                      convert all your past transactions, goals, and
+                      subscriptions to {selectedCurrency}.
+                    </p>
+                  </div>
+                </label>
+              )}
+
               <button
                 type="submit"
                 disabled={isSaving}
                 className="mt-6 w-full rounded-2xl bg-foreground text-background py-3.5 font-medium transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
               >
-                {isSaving ? "Saving..." : "Save Changes"}
+                {isSaving ? "Converting & Saving..." : "Save Changes"}
               </button>
             </form>
           </motion.div>
