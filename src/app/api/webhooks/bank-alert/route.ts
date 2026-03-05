@@ -118,7 +118,17 @@ export async function POST(req: Request) {
     } else if (palmpayCreditMatch && palmpayCreditMatch[1]) {
       type = "income";
       cleanNote = `From: ${palmpayCreditMatch[1].trim()} (PalmPay)`;
+    } else if (
+      opayEmailCreditMatch &&
+      opayEmailCreditMatch[1] &&
+      lowerText.includes("your transfer of")
+    ) {
+      // OPay Debit Email: "Your transfer of ₦100.00 is successful. Transfer Details: Name:RECIPIENT Bank:PalmPay"
+      // Both "your transfer of" AND "Name:...Bank:" appear together — this is an EXPENSE
+      type = "expense";
+      cleanNote = `To: ${opayEmailCreditMatch[1].trim()} (OPay)`;
     } else if (opayEmailCreditMatch && opayEmailCreditMatch[1]) {
+      // OPay Credit Email: Someone sent money TO you — "Name:SENDER Bank:..."
       type = "income";
       cleanNote = `From: ${opayEmailCreditMatch[1].trim()} (OPay)`;
     } else if (opayPushCreditMatch && opayPushCreditMatch[1]) {
