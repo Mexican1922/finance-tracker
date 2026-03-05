@@ -66,7 +66,12 @@ export default function SpendingChart() {
       </div>
 
       <div className="h-[200px] w-full min-w-0">
-        <ResponsiveContainer width="99%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          minWidth={0}
+          minHeight={0}
+        >
           <AreaChart
             data={
               chartData.length > 0 ? chartData : [{ name: "No Data", spend: 0 }]
