@@ -45,7 +45,7 @@ function ActionMenu({
   return (
     <div
       ref={ref}
-      className="absolute right-0 top-8 z-20 min-w-[130px] overflow-hidden rounded-2xl border border-foreground/10 bg-[var(--card-bg)] shadow-xl"
+      className="absolute right-0 bottom-full mb-2 z-50 min-w-[130px] overflow-hidden rounded-2xl border border-foreground/10 bg-[var(--card-bg)] shadow-xl"
     >
       <button
         onClick={() => {
