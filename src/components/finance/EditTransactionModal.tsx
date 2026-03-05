@@ -116,11 +116,11 @@ export default function EditTransactionModal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.95 }}
             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-md overflow-hidden rounded-3xl bg-background/60 p-6 shadow-2xl backdrop-blur-xl border border-foreground/10 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2"
+            className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-md overflow-hidden rounded-t-3xl bg-background/80 px-4 pb-8 pt-6 shadow-2xl backdrop-blur-xl border-t border-foreground/10 sm:inset-x-4 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:pb-6"
           >
             {/* Header */}
-            <div className="mb-6 flex items-center justify-between">
-              <h3 className="text-xl font-semibold tracking-tight text-foreground">
+            <div className="mb-5 flex items-center justify-between">
+              <h3 className="text-lg font-semibold tracking-tight text-foreground">
                 Edit Transaction
               </h3>
               <button

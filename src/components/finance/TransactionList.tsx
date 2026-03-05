@@ -99,7 +99,7 @@ export default function TransactionList() {
           </div>
         </div>
 
-        <div className="glass-card overflow-hidden">
+        <div className="glass-card overflow-visible">
           <div className="divide-y divide-foreground/5">
             {filteredTransactions.length === 0 ? (
               <div className="py-8 text-center text-foreground/50">
@@ -109,7 +109,7 @@ export default function TransactionList() {
               filteredTransactions.map((tx) => (
                 <div
                   key={tx.id}
-                  className="flex items-center justify-between p-4 hover:bg-foreground/[0.02] transition-colors"
+                  className="flex items-center justify-between px-3 py-3 sm:px-4 sm:py-4 hover:bg-foreground/[0.02] transition-colors"
                 >
                   {/* Left: icon + info */}
                   <div className="flex items-center gap-4 min-w-0">
@@ -123,10 +123,10 @@ export default function TransactionList() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold capitalize truncate">
+                      <p className="font-semibold capitalize truncate text-sm sm:text-base">
                         {tx.notes || tx.category}
                       </p>
-                      <p className="text-sm text-foreground/60 capitalize">
+                      <p className="text-xs text-foreground/60 capitalize">
                         {tx.category}
                       </p>
                       <p className="text-xs text-foreground/40 mt-0.5">
@@ -139,7 +139,7 @@ export default function TransactionList() {
                   <div className="flex items-center gap-3 shrink-0 ml-4">
                     <div className="text-right">
                       <p
-                        className={`font-semibold ${
+                        className={`font-semibold text-sm sm:text-base ${
                           tx.type === "income"
                             ? "text-green-600"
                             : "text-foreground"
