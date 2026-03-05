@@ -165,63 +165,109 @@ export default function SettingsPage() {
                     Live Bank Sync (Free)
                   </h3>
                   <p className="text-sm text-foreground/60">
-                    Automatically track spending from your phone&apos;s notifications.
+                    Auto-track your bank transactions from push notifications.
                   </p>
                 </div>
               </div>
 
               <div className="rounded-xl border border-accent/20 bg-accent/5 p-4 space-y-4">
+                {/* Webhook URL */}
                 <div>
-                  <p className="text-sm text-foreground font-semibold mb-1.5">
-                    📋 Step 1 — Copy Your Webhook URL
+                  <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1.5">
+                    Your Webhook URL
                   </p>
-                  <code className="flex overflow-x-auto whitespace-nowrap rounded-lg bg-background p-2.5 text-xs text-foreground/70 border border-foreground/10 select-all">
-                    {typeof window !== "undefined"
-                      ? `${window.location.origin}/api/webhooks/bank-alert`
-                      : ""}
-                  </code>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 overflow-x-auto whitespace-nowrap rounded-lg bg-background p-2.5 text-xs text-foreground/70 border border-foreground/10 select-all">
+                      {typeof window !== "undefined"
+                        ? `${window.location.origin}/api/webhooks/bank-alert`
+                        : ""}
+                    </code>
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(
+                          typeof window !== "undefined"
+                            ? `${window.location.origin}/api/webhooks/bank-alert`
+                            : "",
+                        )
+                      }
+                      className="shrink-0 rounded-lg bg-accent/10 px-3 py-2 text-xs font-medium text-accent hover:bg-accent/20 transition-colors cursor-pointer"
+                    >
+                      Copy
+                    </button>
+                  </div>
                 </div>
 
+                {/* JSON Payload */}
                 <div>
-                  <p className="text-sm text-foreground font-semibold mb-1.5">
-                    📱 Step 2 — MacroDroid Setup (Android)
+                  <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1.5">
+                    Your Content Body (copy this exactly)
                   </p>
-                  <ol className="text-sm text-foreground/80 list-decimal list-inside space-y-1.5">
-                    <li>Open <strong>MacroDroid</strong> &rarr; Create a new Macro.</li>
-                    <li>Add <strong>Trigger &rarr; Device Events &rarr; Notification Received</strong>.</li>
-                    <li>Select your <strong>bank apps</strong> (OPay, PalmPay, Gmail, etc.).</li>
-                    <li>Add <strong>Action &rarr; Connectivity &rarr; HTTP Request</strong>.</li>
-                    <li>Set <strong>Method: POST</strong> and paste your URL above.</li>
-                    <li>Set <strong>Content Type</strong> to <code>application/json</code>.</li>
-                    <li>In <strong>Content Body</strong>, paste:
-                      <pre className="mt-2 rounded-lg bg-background p-2.5 text-xs text-foreground/70 border border-foreground/10 whitespace-pre-wrap overflow-x-auto">{'{\n  "uid": "' + (user?.uid ?? 'YOUR_UID_HERE') + '",\n  "text": {notification}\n}'}</pre>
+                  <div className="flex items-start gap-2">
+                    <pre className="flex-1 rounded-lg bg-background p-2.5 text-xs text-foreground/70 border border-foreground/10 whitespace-pre-wrap overflow-x-auto">
+                      {`{
+  "uid": "${user?.uid ?? "login to see your ID"}",
+  "text": {notification}
+}`}
+                    </pre>
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(
+                          `{\n  "uid": "${user?.uid ?? ""}",\n  "text": {notification}\n}`,
+                        )
+                      }
+                      className="shrink-0 rounded-lg bg-accent/10 px-3 py-2 text-xs font-medium text-accent hover:bg-accent/20 transition-colors cursor-pointer mt-0.5"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+
+                {/* Simple steps */}
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-accent uppercase tracking-wider">
+                    How to connect (Android — MacroDroid)
+                  </p>
+                  <ol className="text-sm text-foreground/80 list-decimal list-inside space-y-1">
+                    <li>
+                      Open <strong>MacroDroid</strong> → new Macro → Trigger:{" "}
+                      <strong>Notification Received</strong> (select your bank
+                      apps).
                     </li>
-                    <li>Save &amp; enable the Macro. Done! 🎉</li>
+                    <li>
+                      Add Action: <strong>HTTP Request</strong> → Method:{" "}
+                      <strong>POST</strong> → paste Webhook URL above.
+                    </li>
+                    <li>
+                      Content Type: <strong>application/json</strong>. Paste the
+                      Content Body above. Save.
+                    </li>
                   </ol>
                 </div>
 
-                <div>
-                  <p className="text-sm text-foreground font-semibold mb-1.5">
-                    🍎 Step 2 — Shortcuts Setup (iPhone / iOS)
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-accent uppercase tracking-wider">
+                    iPhone (iOS — Shortcuts)
                   </p>
-                  <ol className="text-sm text-foreground/80 list-decimal list-inside space-y-1.5">
-                    <li>Open <strong>Shortcuts &rarr; Automation &rarr; New Automation</strong>.</li>
-                    <li>Choose trigger: <strong>Notification Received</strong> from your bank app.</li>
-                    <li>Add action: <strong>Get Contents of URL</strong>.</li>
-                    <li>Paste your Webhook URL and set <strong>Method: POST</strong>.</li>
-                    <li>Add Header: <code>Content-Type: application/json</code>.</li>
-                    <li>Set Request Body (JSON) with your uid and notification text.</li>
-                    <li>Save. Your expenses will sync automatically! 🎉</li>
+                  <ol className="text-sm text-foreground/80 list-decimal list-inside space-y-1">
+                    <li>
+                      Shortcuts → New Automation → Trigger:{" "}
+                      <strong>Notification from bank app</strong>.
+                    </li>
+                    <li>
+                      Action: <strong>Get Contents of URL</strong> (POST) →
+                      paste URL and body above.
+                    </li>
+                    <li>Save. Done!</li>
                   </ol>
                 </div>
 
-                <p className="text-xs text-foreground/50 italic pt-1 border-t border-foreground/10">
-                  ⚡ Finance Tracker auto-filters spam — only real bank alerts are logged.
+                <p className="text-xs text-foreground/40 italic pt-1 border-t border-foreground/10">
+                  ⚡ Spam and promotional alerts are automatically ignored.
                 </p>
               </div>
             </div>
           </div>
-        </section
+        </section>
 
         {/* Notifications */}
         <section className="glass-card overflow-hidden">
